@@ -1,0 +1,124 @@
+<!-- <!DOCTYPE html> -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello</title>
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  #chat {
+    height: 500px;
+    width:100%;
+    border:1px solid purple;
+    float:left;
+    padding:10px;
+    line-height: 1.2rem;
+  }
+  .chatWrap {
+    float: left;
+    width: 70%;
+  }
+  p {
+    margin: 0;
+  }
+  #users {
+    float: left;
+    color:white;
+    height: 500px;
+    border:1px solid purple;
+    width: 30%;
+  }
+  #users p {
+    padding:5px 10px;
+  }
+
+  .nick {
+    color:indianred;
+  }
+  </style>
+</head>
+<body>
+  <div id="nickWrap">
+    <p>Enter a Nickname</p>
+    <p id='nickError'></p>
+    <form action="" id='setNick'>
+      <input type="text" id='nickname'>
+      <input type="submit">
+    </form>
+  </div>
+  <div class="chatWrap">
+    <div id="chat"></div>
+    <div class="typeAct"></div>
+    <form id='send-message'>
+      <input type="text" id='message'>
+      <input type="submit">
+    </form>
+  </div>
+  <div id="users"></div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+   <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  <script>
+  var pera;
+  $(function(){
+    var socket = io.connect();
+    var $messageForm = $("#send-message");
+    var $nickForm = $("#setNick");
+    var $nickBox = $("#nickname");
+    var $users = $("#users");
+    var $nickError = $("#nickError");
+    var $messageBox = $("#message");
+    var $chat = $("#chat");
+    var myNickname;
+    $nickForm.submit(function(e) {
+      e.preventDefault();
+      myNickname = $nickBox.val();
+      socket.emit("new user",{nick:$nickBox.val(),color:getColor()},function(data){
+        if (data){
+          $("#nickWrap").hide();
+          $("#contentWrap").show();
+        } else {
+          $nickError.html("That username is already taken");
+        }
+      });
+      $nickBox.val("");
+    });
+    $messageForm.submit(function(e){
+      e.preventDefault();
+      socket.emit('send message', $messageBox.val());
+      $messageBox.val('');
+    });
+    socket.on("usernames",function(data){
+      var html = '';
+      pera = data;
+      console.log(data[0].nickname);
+      for (i=0;i<data.length;i++){
+        console.log(i);
+        html+="<p style='background:"+data[i].color+"'>"+data[i].nickname+"</p>";
+      }
+      $users.html(html);
+    });
+    socket.on('new message', function(data){
+      $chat.append("<p class='message'><span style='color:"+data.color+"'>"+data.nick+"</span>: "+data.msg+"</p>");
+    });
+    var html;
+    socket.on("newType",function(data){
+      html = "<p>"+data.nickname+":"+data.msg+"</p>";
+      $(".typeAct").html(html);
+    });
+    $messageBox.on("keyup",function(e){
+      socket.emit('typing', {nickname:myNickname,msg:$messageBox.val()});
+    });
+
+  });
+  function getColor(){
+    var r,g,b;
+    r = Math.floor(Math.random()*255);
+    g = Math.floor(Math.random()*255);
+    b = Math.floor(Math.random()*255);
+    var color = "rgb("+r+","+g+","+b+");"
+    return color;
+  }
+  </script>
+</body>
+</html>

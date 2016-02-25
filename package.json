@@ -1,7 +1,8 @@
 {
-  "name": "gulp-starter",
-  "version": "1.0.0",
+  "name": "chat",
+  "version": "0.0.1",
   "main": "index.js",
+  "private":"true",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,7 +16,9 @@
     "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^2.1.1",
-    "gulp-uglify": "^1.5.1"
+    "gulp-uglify": "^1.5.1",
+    "socket.io":"0.9.x",
+    "express":"3.2.6"
   },
   "description": ""
 }
