@@ -7,6 +7,7 @@
   * {
     box-sizing: border-box;
   }
+  /*cool colour rgb(59,226,186),*/
   #chat {
     height: 500px;
     width:100%;
@@ -14,10 +15,12 @@
     float:left;
     padding:10px;
     line-height: 1.2rem;
+    position:relative;
+    overflow: hidden;
   }
   .chatWrap {
     float: left;
-    width: 70%;
+    width: calc(100% - 300px);
   }
   p {
     margin: 0;
@@ -28,13 +31,33 @@
     height: 500px;
     border:1px solid purple;
     width: 30%;
+    width: 300px;
   }
   #users p {
     padding:5px 10px;
   }
-
+  .contentWrap {
+    display:none;
+  }
   .nick {
     color:indianred;
+  }
+  .typeAct {
+    position: absolute;
+    bottom:-50px;
+    padding:10px;
+    background: #a1a1a1;
+    color:white;
+    transition:all 500ms;
+  }
+  .typeAct.active {
+    bottom:0;
+  }
+  #nickWrap {
+    width: 189px;
+    height: 200px;
+    margin: 0 auto;
+    margin-top: 22%;
   }
   </style>
 </head>
@@ -47,17 +70,20 @@
       <input type="submit">
     </form>
   </div>
-  <div class="chatWrap">
-    <div id="chat"></div>
-    <div class="typeAct"></div>
-    <form id='send-message'>
-      <input type="text" id='message'>
-      <input type="submit">
-    </form>
+  <div class="contentWrap">
+    <div class="chatWrap">
+      <div id="chat">
+        <div class="typeAct"></div>
+      </div>
+      <form id='send-message'>
+        <input type="text" id='message'>
+        <input type="submit">
+      </form>
+    </div>
+    <div id="users"></div>
   </div>
-  <div id="users"></div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-   <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+   <script src="/socket.io/socket.io.js"></script>
   <script>
   var pera;
   $(function(){
@@ -69,14 +95,15 @@
     var $nickError = $("#nickError");
     var $messageBox = $("#message");
     var $chat = $("#chat");
-    var myNickname;
+    var myNickname, myColor;
     $nickForm.submit(function(e) {
       e.preventDefault();
       myNickname = $nickBox.val();
-      socket.emit("new user",{nick:$nickBox.val(),color:getColor()},function(data){
+      myColor = getColor();
+      socket.emit("new user",{nick:$nickBox.val(),color:myColor},function(data){
         if (data){
           $("#nickWrap").hide();
-          $("#contentWrap").show();
+          $(".contentWrap").show();
         } else {
           $nickError.html("That username is already taken");
         }
@@ -104,10 +131,13 @@
     var html;
     socket.on("newType",function(data){
       html = "<p>"+data.nickname+":"+data.msg+"</p>";
+      console.log(data);
+      $(".typeAct").css({"background":data.color});
+      startTyping();
       $(".typeAct").html(html);
     });
     $messageBox.on("keyup",function(e){
-      socket.emit('typing', {nickname:myNickname,msg:$messageBox.val()});
+      socket.emit('typing', {color:myColor,nickname:myNickname,msg:$messageBox.val()});
     });
 
   });
@@ -116,8 +146,16 @@
     r = Math.floor(Math.random()*255);
     g = Math.floor(Math.random()*255);
     b = Math.floor(Math.random()*255);
-    var color = "rgb("+r+","+g+","+b+");"
+    var color = "rgb("+r+","+g+","+b+")";
     return color;
+  }
+  var timeout;
+  function startTyping(){
+    $(".typeAct").addClass("active");
+    clearTimeout(timeout);
+     timeout = setTimeout(function(){
+      $(".typeAct").removeClass("active");
+    },2500);
   }
   </script>
 </body>
