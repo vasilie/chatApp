@@ -25,6 +25,11 @@
   p {
     margin: 0;
   }
+  textarea {
+    width: 100%;
+    outline: none;
+    resize: none;
+  }
   #users {
     float: left;
     color:white;
@@ -76,7 +81,7 @@
         <div class="typeAct"></div>
       </div>
       <form id='send-message'>
-        <input type="text" id='message'>
+        <textarea type="text" id='message'></textarea>
         <input type="submit">
       </form>
     </div>
